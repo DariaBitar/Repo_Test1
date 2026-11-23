@@ -1,1 +1,229 @@
+# Exercise 1 
+# task 1 and 2 done during class on a paper 
+#Here is an approximate md version 
+classDiagram
+    class User {
+        -id: str
+        -name: str
+        -password: str
+        +login() bool
+        +logout() void
+    }
+
+    class Patient {
+        -medicalHistory: str
+        +postProblem(description: str) HealthProblem
+        +pay(problem: HealthProblem, method: Payment) bool
+        +viewPastPrescriptions() list~Prescription~
+    }
+
+    class Organizer {
+        -adminLevel: str
+        +assignDoctor(problem: HealthProblem, doctor: Doctor) void
+        +issueCredentials(user: User) void
+        +forwardPayment(payment: Payment, doctor: Doctor) void
+        +updateSystem() void
+    }
+
+    class Doctor {
+        -specialty: str
+        +diagnose(problem: HealthProblem) void
+        +writePrescription(problem: HealthProblem, details: str) Prescription
+    }
+
+    class ProblemStatus {
+        <<enumeration>>
+        PENDING
+        IN_REVIEW
+        RESOLVED
+    }
+
+    class HealthProblem {
+        -id: str
+        -description: str
+        -status: ProblemStatus
+        -createdAt: datetime
+        +updateStatus(status: ProblemStatus) void
+    }
+
+    class Prescription {
+        -id: str
+        -details: str
+        -createdAt: datetime
+        -isReusable: bool
+    }
+
+    class Payment {
+        <<abstract>>
+        -amount: float
+        -timestamp: datetime
+        +processPayment()* bool
+    }
+
+    class CashPayment {
+        +processPayment() bool
+    }
+
+    class CheckPayment {
+        -checkNumber: str
+        +processPayment() bool
+    }
+
+    class CreditCardPayment {
+        -cardLast4: str
+        +processPayment() bool
+    }
+
+    User <|-- Patient
+    User <|-- Organizer
+    User <|-- Doctor
+
+    Patient "1" *-- "0..*" HealthProblem : submits
+    Organizer "1" -- "0..*" HealthProblem : reviews
+    Doctor "1" -- "0..*" Prescription : issues
+    HealthProblem "1" -- "0..1" Prescription : produces
+    HealthProblem "1" -- "1" Payment : settles
+    HealthProblem ..> ProblemStatus : uses
+
+    Payment <|-- CashPayment
+    Payment <|-- CheckPayment
+    Payment <|-- CreditCardPayment
+
+#Task 3 
+# Here are some of the short answers based on my paper document
+## Question 1 
+We have to change the multpilicity between the healthproblems and doctors to be able to consult either 1 or many
+## Question 2
+Yes, prespriction should be reusable, we can add a link between patients to prescritions and change the multiplicity
+## Question 3 
+The strategy pattern seems like the most interesting
+## Question 4 
+We need to process the payments in an atomic database transaction to avoid data integrity and to validate payment state before forwarding any funds
+
+#Exercise 2 
+# Again this was done on a paper 
+# But here is an approximation of the complete class diagram of task 1 and 2 
+classDiagram
+    class Member {
+        -memberId: str
+        -name: str
+        -address: str
+        +placeOrder() Order
+    }
+
+    class RoyalMember {
+        -discountRate: float
+        +orderUnavailableItem(item: Item) OrderLine
+    }
+
+    class RegularMember {
+    }
+
+    class NonMember {
+        -name: str
+        -email: str
+        +requestApplication() MembershipApplication
+    }
+
+    class MembershipApplication {
+        -applicationId: str
+        -submittedDate: date
+        -status: str
+    }
+
+    class Order {
+        -orderId: str
+        -orderDate: date
+        -status: str
+        +calculateTotal() float
+        +saveToDailyRecords() void
+    }
+
+    class OrderLine {
+        -quantity: int
+        -isBackordered: bool
+        +getSubtotal() float
+    }
+
+    class Item {
+        -itemId: str
+        -title: str
+        -price: float
+        -stockQty: int
+        +isAvailable() bool
+    }
+
+    class CD {
+        -artist: str
+        -trackCount: int
+    }
+
+    class Tape {
+        -durationMinutes: int
+    }
+
+    class Invoice {
+        -invoiceId: str
+        -totalAmount: float
+        +printInvoice() void
+    }
+
+    class ShippingList {
+        -shippingId: str
+        -shippingAddress: str
+        +printShippingList() void
+    }
+
+    class Payment {
+        <<abstract>>
+        -amount: float
+        -paymentDate: date
+        +processPayment()* bool
+    }
+
+    class Cash {
+        +processPayment() bool
+    }
+
+    class Check {
+        -checkNumber: str
+        +processPayment() bool
+    }
+
+    class BankDraft {
+        -draftNumber: str
+        +processPayment() bool
+    }
+
+    class OrderProcessingClerk {
+        -clerkId: str
+        -name: str
+        +verifyMembership(member: Member) bool
+        +processOrder(order: Order) void
+    }
+
+    class CollectionDepartmentClerk {
+        -clerkId: str
+        -name: str
+        +collectPayment(order: Order, payment: Payment) bool
+    }
+
+    Member <|-- RoyalMember
+    Member <|-- RegularMember
+    Item <|-- CD
+    Item <|-- Tape
+    Payment <|-- Cash
+    Payment <|-- Check
+    Payment <|-- BankDraft
+
+    NonMember "1" -- "1" MembershipApplication : submits
+    Member "1" -- "0..*" Order : places
+    Order "1" *-- "1..*" OrderLine : contains
+    OrderLine "0..*" o-- "1" Item : references
+    Order "1" *-- "1" Invoice : generates
+    Order "1" *-- "1" ShippingList : generates
+    Order "1" *-- "1" Payment : paid by
+
+    OrderProcessingClerk "1" -- "0..*" Order : processes
+    CollectionDepartmentClerk "1" -- "0..*" Payment : handles
 
